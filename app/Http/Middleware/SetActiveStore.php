@@ -13,14 +13,16 @@ class SetActiveStore
     /**
      * Handle an incoming request.
      *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * @param \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response) $next
      */
     public function handle(Request $request, Closure $next): Response
     {
         $host = $request->getHost();
         $store = Store::where('domain', $host)->firstOrFail();
-
         app()->instance('store.active', $store);
+        $db = $store->database_options['dbname'];
+        config(['database.connections.mysql.database' => $db]);
+
         return $next($request);
     }
 }

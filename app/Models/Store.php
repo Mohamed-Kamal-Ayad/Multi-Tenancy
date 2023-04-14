@@ -8,6 +8,15 @@ use Illuminate\Database\Eloquent\Model;
 class Store extends Model
 {
     use HasFactory;
+    protected $fillable = [
+        'name',
+        'domain',
+        'database_options'
+    ];
+
+    protected $casts = [
+        'database_options' => 'array'
+    ];
 
     public function categories()
     {

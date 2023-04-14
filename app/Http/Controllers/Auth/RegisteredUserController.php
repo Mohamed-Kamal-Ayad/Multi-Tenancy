@@ -2,14 +2,18 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Events\StoreCreated;
 use App\Http\Controllers\Controller;
+use App\Models\Store;
 use App\Models\User;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
 
@@ -35,12 +39,27 @@ class RegisteredUserController extends Controller
             'email' => ['required', 'string', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
+        DB::beginTransaction();
+        try {
+            $store = Store::create([
+                'name' => $request->name,
+                'domain' => Str::slug($request->name). '.' .env('APP_DOMAIN'),
+            ]);
 
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-        ]);
+            $user = User::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+                'store_id' => $store->id,
+            ]);
+
+            DB::commit();
+
+            event(new StoreCreated($store));
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        }
 
         event(new Registered($user));
 

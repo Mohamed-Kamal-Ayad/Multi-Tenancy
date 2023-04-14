@@ -8,7 +8,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class Product extends Model
 {
-    use HasFactory, BelongToStore;
+    use HasFactory;
+    //use BelongToStore;
+
+    protected $connection = 'tenant';
 
     public function category()
     {

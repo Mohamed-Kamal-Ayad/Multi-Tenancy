@@ -14,8 +14,8 @@ trait BelongToStore
     //boot + trait name
     protected static function bootBelongToStore()
     {
-        self::addGlobalScope('store', function ($builder) {
-            $builder->where('store_id', app('store.active')->id);
+        self::addGlobalScope('store', function ($query) {
+            $query->where('store_id', app('store.active')->id);
         });
     }
 }
